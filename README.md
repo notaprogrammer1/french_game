@@ -47,14 +47,16 @@ Levels are cumulative. Level 3 includes Levels 1, 2, and 3.
 
 ## Modes
 
-0. **Learn mode** — Shows the answers directly.
+0. **Learn mode** — Shows the answers directly in a steady order.
 1. **Pattern → sound** — See `ou`; answer `oo`.
 2. **Sound → pattern** — See `oo`; answer `ou`.
 3. **Word → rough sound** — See `rouge`; answer something like `ghoozh`.
 4. **Sound/meaning → French word** — See `ghoozh` and `red`; answer `rouge`.
 5. **Build from chunks** — See shuffled chunks like `ge / r / ou`; type `rouge`.
 6. **Review cards that need work** — Missed cards come back until you answer them correctly twice in a row.
-7. **Mixed drill** — Randomly chooses from the main drill modes and lightly weights missed cards.
+7. **Mixed drill** — Rotates between the main drill modes.
+
+Drill modes use shuffled decks rather than pure randomness. You should see each card in a mode's current pool before that deck reshuffles, and the game tries not to show the same card twice in a row.
 
 ## In-game commands
 
@@ -90,7 +92,7 @@ This game works best as a small daily drill, not as a giant cram session. Ten fo
 
 Choose **Level 1**, then choose **Learn mode**.
 
-Do not quiz yourself yet. Just look at the cards and say the examples out loud. The point is to let your brain notice patterns:
+Learn mode is intentionally organized instead of random. Pattern cards are shown in level order, word cards are shown in level order, and mixed learn cards are grouped by level. Do not quiz yourself yet. Just look at the cards and say the examples out loud. The point is to let your brain notice patterns:
 
 - `ou` keeps sounding like "oo"
 - `ch` keeps sounding like "sh"
@@ -141,7 +143,9 @@ Then move up a level and repeat.
 
 ### 6. Use Mixed drill when you want a normal practice session
 
-Once you have seen the cards in Learn mode, **Mixed drill** is the easiest default mode. It rotates between reading, spelling, and chunk-building. Cards you have missed are lightly weighted to show up more often.
+Once you have seen the cards in Learn mode, **Mixed drill** is the easiest default mode. It rotates between reading, spelling, and chunk-building.
+
+The drill modes are not fully random. They use shuffled decks so you get a steady stream of the current material instead of seeing the same card over and over.
 
 ### 7. Keep the English-ish sounds temporary
 
