@@ -23,9 +23,74 @@ Commands during a round:
 Level behavior:
   Levels are cumulative. Level 3 includes cards from Levels 1, 2, and 3.
 
+Learn mode:
+  Cards are shown in order so you can build up the patterns deliberately.
+
+Drill behavior:
+  Drill modes use a shuffled deck. You should see each card in the current pool
+  before the deck reshuffles, and the same card is avoided twice in a row when
+  there is more than one card available.
+
 Review behavior:
   A missed card goes into review. Two correct answers in a row clears it.
 """
+
+
+class StudySession:
+    """Keeps short-lived ordering state for a single CLI session."""
+
+    def __init__(self) -> None:
+        self.decks: dict[str, list[dict]] = {}
+        self.last_card_id: dict[str, str] = {}
+
+    def next_card(self, key: str, cards: list[dict]) -> dict:
+        """Draw from a shuffled deck while avoiding immediate repeats.
+
+        Each card appears once per cycle. When the deck is exhausted, a new
+        shuffled cycle begins. If the first card of the new cycle would match
+        the previous card, it is swapped with another card when possible.
+        """
+
+        if not cards:
+            raise ValueError("Cannot choose from an empty card list.")
+
+        card_ids = tuple(card["id"] for card in cards)
+        deck_key = f"{key}:{card_ids}"
+        deck = self.decks.get(deck_key, [])
+        valid_ids = set(card_ids)
+        deck = [card for card in deck if card["id"] in valid_ids]
+
+        if not deck:
+            deck = list(cards)
+            random.shuffle(deck)
+            self._avoid_first_repeat(deck, self.last_card_id.get(key))
+
+        card = deck.pop(0)
+
+        if (
+            card["id"] == self.last_card_id.get(key)
+            and len(cards) > 1
+            and deck
+        ):
+            for index, candidate in enumerate(deck):
+                if candidate["id"] != card["id"]:
+                    deck.insert(index, card)
+                    card = deck.pop(index + 1)
+                    break
+
+        self.decks[deck_key] = deck
+        self.last_card_id[key] = card["id"]
+        return card
+
+    @staticmethod
+    def _avoid_first_repeat(deck: list[dict], previous_id: str | None) -> None:
+        if not previous_id or len(deck) <= 1 or deck[0]["id"] != previous_id:
+            return
+
+        for index in range(1, len(deck)):
+            if deck[index]["id"] != previous_id:
+                deck[0], deck[index] = deck[index], deck[0]
+                return
 
 
 def print_header() -> None:
@@ -112,6 +177,30 @@ def show_word_card(card: dict) -> None:
         print(f"  - {note}")
 
 
+def show_learn_card(card: dict, index: int, total: int) -> None:
+    print(f"\nCard {index + 1}/{total}")
+    if card["id"].startswith("pattern:"):
+        show_pattern_card(card)
+    else:
+        show_word_card(card)
+
+
+def ordered_learn_cards(choice: str, active_level: int) -> list[dict]:
+    patterns = level_filter(PATTERNS, active_level)
+    words = level_filter(WORDS, active_level)
+
+    if choice == "1":
+        return patterns
+    if choice == "2":
+        return words
+
+    mixed_cards: list[dict] = []
+    for level in range(1, active_level + 1):
+        mixed_cards.extend([card for card in patterns if card["level"] == level])
+        mixed_cards.extend([card for card in words if card["level"] == level])
+    return mixed_cards
+
+
 def register_result(score: Score, progress: ProgressStore, card: dict, result: str) -> None:
     if result == "correct":
         score.add_correct()
@@ -122,20 +211,32 @@ def register_result(score: Score, progress: ProgressStore, card: dict, result: s
     progress.record(card["id"], result)
 
 
-def choose_weighted(cards: list[dict], progress: ProgressStore) -> dict:
-    weights = [progress.weight_for(card["id"]) for card in cards]
-    return random.choices(cards, weights=weights, k=1)[0]
+def choose_drill_card(
+    key: str,
+    cards: list[dict],
+    progress: ProgressStore,
+    session: StudySession | None,
+) -> dict:
+    if session is None:
+        session = StudySession()
+
+    card = session.next_card(key, cards)
+
+    # Review mode is the explicit place for weak-card drilling. In normal modes
+    # we still want a steady stream of the whole pool, so this deliberately avoids
+    # weighted random repeats.
+    return card
 
 
-def learn_mode(score: Score, progress: ProgressStore, active_level: int) -> str | None:
+def learn_mode(score: Score, progress: ProgressStore, active_level: int, session: StudySession | None = None) -> str | None:
     print("\nLearn mode")
     print("==========")
-    print("This mode gives you the answer directly.")
+    print("This mode gives you the answer directly, in a steady order.")
     print(describe_level(active_level))
     print("\nChoose:")
-    print("  1. Pattern cards")
-    print("  2. Word cards")
-    print("  3. Mixed learn cards")
+    print("  1. Pattern cards, in level order")
+    print("  2. Word cards, in level order")
+    print("  3. Mixed cards, grouped by level")
     print("  menu. Return to menu")
     print("  q. Quit")
 
@@ -148,21 +249,20 @@ def learn_mode(score: Score, progress: ProgressStore, active_level: int) -> str 
         print("Choose 1, 2, 3, menu, or q.")
         return None
 
-    patterns = level_filter(PATTERNS, active_level)
-    words = level_filter(WORDS, active_level)
+    cards = ordered_learn_cards(choice, active_level)
+    index = 0
 
     print("\nPress Enter for next card. Type 'menu', 'stats', or 'q' any time.")
 
     while True:
-        if choice == "1":
-            show_pattern_card(choose(patterns))
-        elif choice == "2":
-            show_word_card(choose(words))
-        else:
-            if random.choice(["pattern", "word"]) == "pattern":
-                show_pattern_card(choose(patterns))
-            else:
-                show_word_card(choose(words))
+        if index == 0:
+            print("\nStarting from the top of the list.")
+
+        show_learn_card(cards[index], index, len(cards))
+        index = (index + 1) % len(cards)
+
+        if index == 0:
+            print("\nEnd of this learn list. Press Enter to loop again, or type 'menu'.")
 
         answer = read_input("\nNext? ")
         action = check_command(answer, score, progress)
@@ -172,9 +272,10 @@ def learn_mode(score: Score, progress: ProgressStore, active_level: int) -> str 
             return action
 
 
-def pattern_to_sound(score: Score, progress: ProgressStore, active_level: int, cards: list[dict] | None = None) -> str | None:
+def pattern_to_sound(score: Score, progress: ProgressStore, active_level: int, cards: list[dict] | None = None, session: StudySession | None = None) -> str | None:
     pool = cards or level_filter(PATTERNS, active_level)
-    card = choose_weighted(pool, progress)
+    key = f"pattern_to_sound:level-{active_level}"
+    card = choose_drill_card(key, pool, progress, session)
     grapheme = choose(card["graphemes"])
 
     print(f"\nPattern:  {grapheme}")
@@ -207,9 +308,10 @@ def pattern_to_sound(score: Score, progress: ProgressStore, active_level: int, c
     return None
 
 
-def sound_to_pattern(score: Score, progress: ProgressStore, active_level: int, cards: list[dict] | None = None) -> str | None:
+def sound_to_pattern(score: Score, progress: ProgressStore, active_level: int, cards: list[dict] | None = None, session: StudySession | None = None) -> str | None:
     pool = cards or level_filter(PATTERNS, active_level)
-    card = choose_weighted(pool, progress)
+    key = f"sound_to_pattern:level-{active_level}"
+    card = choose_drill_card(key, pool, progress, session)
     expected = card["graphemes"]
 
     print(f"\nSound hint:  {card['sound']}")
@@ -243,9 +345,10 @@ def sound_to_pattern(score: Score, progress: ProgressStore, active_level: int, c
     return None
 
 
-def word_to_sound(score: Score, progress: ProgressStore, active_level: int, cards: list[dict] | None = None) -> str | None:
+def word_to_sound(score: Score, progress: ProgressStore, active_level: int, cards: list[dict] | None = None, session: StudySession | None = None) -> str | None:
     pool = cards or level_filter(WORDS, active_level)
-    card = choose_weighted(pool, progress)
+    key = f"word_to_sound:level-{active_level}"
+    card = choose_drill_card(key, pool, progress, session)
 
     print(f"\nFrench word:  {card['french']}")
     print(f"Meaning:      {card['meaning']}")
@@ -280,9 +383,10 @@ def word_to_sound(score: Score, progress: ProgressStore, active_level: int, card
     return None
 
 
-def sound_to_word(score: Score, progress: ProgressStore, active_level: int, cards: list[dict] | None = None) -> str | None:
+def sound_to_word(score: Score, progress: ProgressStore, active_level: int, cards: list[dict] | None = None, session: StudySession | None = None) -> str | None:
     pool = cards or level_filter(WORDS, active_level)
-    card = choose_weighted(pool, progress)
+    key = f"sound_to_word:level-{active_level}"
+    card = choose_drill_card(key, pool, progress, session)
 
     print(f"\nSound hint:  {card['sound']}")
     print(f"Meaning:     {card['meaning']}")
@@ -319,9 +423,10 @@ def sound_to_word(score: Score, progress: ProgressStore, active_level: int, card
     return None
 
 
-def build_from_chunks(score: Score, progress: ProgressStore, active_level: int, cards: list[dict] | None = None) -> str | None:
+def build_from_chunks(score: Score, progress: ProgressStore, active_level: int, cards: list[dict] | None = None, session: StudySession | None = None) -> str | None:
     pool = cards or level_filter(WORDS, active_level)
-    card = choose_weighted(pool, progress)
+    key = f"build_from_chunks:level-{active_level}"
+    card = choose_drill_card(key, pool, progress, session)
     pieces = shuffled(card["chunks"])
 
     print(f"\nMeaning:     {card['meaning']}")
@@ -359,7 +464,7 @@ def build_from_chunks(score: Score, progress: ProgressStore, active_level: int, 
     return None
 
 
-def review_mode(score: Score, progress: ProgressStore, active_level: int) -> str | None:
+def review_mode(score: Score, progress: ProgressStore, active_level: int, session: StudySession | None = None) -> str | None:
     patterns = progress.review_cards(level_filter(PATTERNS, active_level))
     words = progress.review_cards(level_filter(WORDS, active_level))
 
@@ -375,12 +480,12 @@ def review_mode(score: Score, progress: ProgressStore, active_level: int) -> str
         drill = "word"
 
     if drill == "pattern":
-        return random.choice([pattern_to_sound, sound_to_pattern])(score, progress, active_level, patterns)
+        return random.choice([pattern_to_sound, sound_to_pattern])(score, progress, active_level, patterns, session)
 
-    return random.choice([word_to_sound, sound_to_word, build_from_chunks])(score, progress, active_level, words)
+    return random.choice([word_to_sound, sound_to_word, build_from_chunks])(score, progress, active_level, words, session)
 
 
-def mixed(score: Score, progress: ProgressStore, active_level: int) -> str | None:
+def mixed(score: Score, progress: ProgressStore, active_level: int, session: StudySession | None = None) -> str | None:
     mode = random.choice([
         pattern_to_sound,
         sound_to_pattern,
@@ -388,7 +493,7 @@ def mixed(score: Score, progress: ProgressStore, active_level: int) -> str | Non
         sound_to_word,
         build_from_chunks,
     ])
-    return mode(score, progress, active_level)
+    return mode(score, progress, active_level, session=session)
 
 
 MODES = {
@@ -431,6 +536,7 @@ def choose_mode(active_level: int, progress: ProgressStore) -> str | None:
 def main() -> None:
     score = Score()
     progress = ProgressStore()
+    session = StudySession()
     active_level = 1
     print_header()
     print(describe_level(active_level))
@@ -453,7 +559,7 @@ def main() -> None:
             print("Press Enter after each answer. Type 'menu' to switch modes.\n")
 
         while True:
-            result = mode_func(score, progress, active_level)
+            result = mode_func(score, progress, active_level, session=session)
             if choice != "0":
                 print(score.summary())
 
