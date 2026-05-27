@@ -20,13 +20,14 @@ class Score:
     def total(self) -> int:
         return self.correct + self.almost + self.missed
 
-    def add(self, result: str) -> None:
-        if result == "correct":
-            self.correct += 1
-        elif result == "almost":
-            self.almost += 1
-        else:
-            self.missed += 1
+    def add_correct(self) -> None:
+        self.correct += 1
+
+    def add_almost(self) -> None:
+        self.almost += 1
+
+    def add_missed(self) -> None:
+        self.missed += 1
 
     def summary(self) -> str:
         if self.total == 0:
@@ -41,12 +42,13 @@ class Score:
 class ProgressStore:
     """Tiny JSON progress store.
 
-    A missed card goes into review. Two correct answers in a row clears it.
+    A card is considered to need review if it has been missed and does not yet
+    have a streak of two correct answers.
     """
 
     def __init__(self, path: Path | None = None) -> None:
         env_path = os.getenv("FRENCH_PHONICS_PROGRESS")
-        self.path = path or (Path(env_path).expanduser() if env_path else DEFAULT_PROGRESS_PATH)
+        self.path = path or Path(env_path).expanduser() if env_path else path or DEFAULT_PROGRESS_PATH
         self.data = {"version": 1, "cards": {}}
         self.load()
 
@@ -68,14 +70,21 @@ class ProgressStore:
             f.write("\n")
 
     def record(self, card_id: str, result: str) -> None:
-        entry = self.data.setdefault("cards", {}).setdefault(
+        cards = self.data.setdefault("cards", {})
+        entry = cards.setdefault(
             card_id,
             {"attempts": 0, "correct": 0, "almost": 0, "missed": 0, "streak": 0},
         )
+
         entry["attempts"] = int(entry.get("attempts", 0)) + 1
         entry[result] = int(entry.get(result, 0)) + 1
         entry["last_result"] = result
-        entry["streak"] = int(entry.get("streak", 0)) + 1 if result == "correct" else 0
+
+        if result == "correct":
+            entry["streak"] = int(entry.get("streak", 0)) + 1
+        else:
+            entry["streak"] = 0
+
         self.save()
 
     def entry(self, card_id: str) -> dict:
@@ -101,8 +110,10 @@ class ProgressStore:
         almost = sum(int(card.get("almost", 0)) for card in cards.values())
         missed = sum(int(card.get("missed", 0)) for card in cards.values())
         review = sum(1 for card_id in cards if self.needs_review(card_id))
+
         if attempts == 0:
             return "Saved progress: no saved attempts yet."
+
         adjusted = round((correct + 0.5 * almost) / attempts * 100)
         return (
             f"Saved progress: {attempts} attempts across {len(cards)} cards — "
