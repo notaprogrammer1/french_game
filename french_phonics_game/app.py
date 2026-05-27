@@ -127,7 +127,7 @@ def choose_weighted(cards: list[dict], progress: ProgressStore) -> dict:
     return random.choices(cards, weights=weights, k=1)[0]
 
 
-def learn_mode(active_level: int, score: Score, progress: ProgressStore) -> str | None:
+def learn_mode(score: Score, progress: ProgressStore, active_level: int) -> str | None:
     print("\nLearn mode")
     print("==========")
     print("This mode gives you the answer directly.")
