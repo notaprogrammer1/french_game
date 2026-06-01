@@ -1,6 +1,38 @@
 # French Phonics Game
 
-A terminal game for learning how written French maps to spoken French.
+A small repo with two terminal games for learning French:
+
+1. **French Phonics Game** — learn how written French maps to spoken French.
+2. **French Conjugation Game** — drill verb forms in short contextual sentences.
+
+Both games are beginner-friendly, require no third-party packages, and run in the terminal.
+
+## Requirements
+
+Python 3.10 or newer. No third-party packages required.
+
+## Run it
+
+Run the phonics game directly:
+
+```bash
+python3 -m french_phonics_game
+```
+
+Or install locally:
+
+```bash
+python3 -m pip install -e .
+french-phonics
+```
+
+Run the standalone conjugation game after installing locally:
+
+```bash
+french-conjugations
+```
+
+## French Phonics Game
 
 This is a **French sound-spelling chunk** trainer. It does not treat French as a simple letter-for-letter swap with English. Instead, it drills patterns like:
 
@@ -19,24 +51,7 @@ The goal is to build the real reading/writing reflexes:
 4. **Learning**: view answers directly before drilling
 5. **Reviewing**: revisit cards you missed until they start sticking
 
-## Requirements
-
-Python 3.10 or newer. No third-party packages required.
-
-## Run it
-
-```bash
-python3 -m french_phonics_game
-```
-
-Or install locally:
-
-```bash
-python3 -m pip install -e .
-french-phonics
-```
-
-## Levels
+### Phonics levels
 
 Levels are cumulative. Level 3 includes Levels 1, 2, and 3.
 
@@ -45,7 +60,7 @@ Levels are cumulative. Level 3 includes Levels 1, 2, and 3.
 - **Level 3**: includes Levels 1–2 + nasals, `ç`, `gn`, and more common words
 - **Level 4**: includes Levels 1–3 + harder sounds like French `u`, French `r`, and final `e`
 
-## Modes
+### Phonics modes
 
 0. **Learn mode** — Shows the answers directly in a steady order.
 1. **Pattern → sound** — See `ou`; answer `oo`.
@@ -55,8 +70,39 @@ Levels are cumulative. Level 3 includes Levels 1, 2, and 3.
 5. **Build from chunks** — See shuffled chunks like `ge / r / ou`; type `rouge`.
 6. **Review cards that need work** — Missed cards come back until you answer them correctly twice in a row.
 7. **Mixed drill** — Rotates between the main drill modes.
+8. **Conjugation in context** — A lightweight conjugation drill kept in the phonics app for convenience.
 
 Drill modes use shuffled decks rather than pure randomness. You should see each card in a mode's current pool before that deck reshuffles, and the game tries not to show the same card twice in a row.
+
+## French Conjugation Game
+
+The standalone conjugation game is intentionally separate from the phonics app. It has no saved progress file and keeps only a session score. That makes it easier to experiment with verb levels without tying it to the phonics review system.
+
+### Conjugation levels
+
+Conjugation levels are cumulative by verb:
+
+```text
+Level 1: être
+Level 2: être + avoir
+Level 3: être + avoir + aller
+...
+Level 20: all 20 verbs
+```
+
+Each level unlocks one new verb while keeping earlier verbs in the practice pool.
+
+### Conjugation modes
+
+1. **Learn new verb** — Show only the verb unlocked at the current level.
+2. **Drill new verb** — Quiz only the verb unlocked at the current level.
+3. **Learn cumulative** — Show every verb unlocked so far.
+4. **Drill cumulative** — Quiz every verb unlocked so far.
+5. **Mixed cumulative** — Run a shuffled cumulative drill.
+
+The conjugation game accepts either the missing form or the full French sentence. Accent-only mistakes are marked as "almost." Different forms are not treated as accent variants: `été` and `était` are different answers.
+
+The game already normalizes cards so future data can provide multiple blank-sentence examples per form without changing the game loop.
 
 ## In-game commands
 
@@ -65,12 +111,13 @@ q        quit
 menu     return to mode menu
 hint     show a hint
 score    show this session's score
-stats    show saved progress
+stats    show saved phonics progress / session score depending on game
+level    change level in the conjugation game
 ```
 
 ## Progress saving
 
-Progress is saved automatically to `~/.french_phonics_game/progress.json`.
+The phonics game saves progress automatically to `~/.french_phonics_game/progress.json`.
 
 To use a different file:
 
@@ -78,13 +125,15 @@ To use a different file:
 export FRENCH_PHONICS_PROGRESS=/path/to/progress.json
 ```
 
+The standalone conjugation game does **not** save progress. It only tracks the current session score.
+
 ## Mac accent tip
 
 You can usually type accented letters on a Mac by holding the base letter: hold `e` for `é`, `è`, `ê`, or `ë`; hold `c` for `ç`; hold `a` for `à` or `â`.
 
-The game is forgiving: if you type `francais`, it will say "almost" and show the correct accented spelling `français`.
+The games are forgiving: if you type `francais`, they will say "almost" and show the correct accented spelling `français`.
 
-## Suggested learning routine
+## Suggested phonics learning routine
 
 This game works best as a small daily drill, not as a giant cram session. Ten focused minutes is better than forcing an hour and hating it.
 
