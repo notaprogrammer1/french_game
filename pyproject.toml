@@ -1,7 +1,7 @@
 [project]
 name = "french-phonics-game"
-version = "0.3.0"
-description = "A terminal game for drilling French sound-spelling chunks."
+version = "0.4.0"
+description = "A terminal game for drilling French sound-spelling chunks and contextual conjugations."
 requires-python = ">=3.10"
 authors = [{ name = "Paul A" }]
 dependencies = []
