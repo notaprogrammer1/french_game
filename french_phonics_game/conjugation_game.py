@@ -275,7 +275,7 @@ def choose_mode(level: int, score: Score) -> tuple[str, Callable[[list[dict], Sc
     print("  q. Quit")
     choice = read_input("> ")
     action = check_command(choice, score)
-    if action == "continue":
+    if action in {"continue", "menu"}:
         return choose_mode(level, score)
     if action in {"quit", "level"}:
         return action
