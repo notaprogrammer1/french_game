@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: french-conjugations
+    runtime: python
+    buildCommand: pip install '.[web]'
+    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 30 french_phonics_game.web:application
+    healthCheckPath: /api/settings
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.8
