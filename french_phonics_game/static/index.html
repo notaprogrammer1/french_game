@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#174c3c">
+  <meta name="description" content="Practice French conjugations, one sentence at a time.">
+  <title>French Conjugations</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <main>
+    <header class="masthead">
+      <div><span class="eyebrow">A LITTLE FRENCH, EVERY DAY</span><h1>Conjugations<span class="dot">.</span></h1></div>
+      <span class="brand-mark" aria-hidden="true" lang="fr">fr</span>
+    </header>
+
+    <details id="settings" class="settings">
+      <summary><span id="session-label">Level 1 · être</span><span class="settings-link">Change practice</span></summary>
+      <form id="settings-form">
+        <label for="level">Level <span class="muted">Each level adds one verb</span></label>
+        <select id="level" name="level" disabled><option value="1">1 · être</option></select>
+        <label for="mode">Practice mode</label>
+        <select id="mode" name="mode" disabled><option value="drill-current">Drill new verb</option></select>
+        <button type="submit" id="start" disabled>Start practice</button>
+        <p class="small muted">Your score continues when you change practice. Reload to start a fresh session.</p>
+      </form>
+    </details>
+
+    <section class="scoreboard" aria-label="Session score">
+      <div><span class="eyebrow">SESSION SCORE</span><strong id="score">0 / 0 <span>correct</span></strong></div>
+      <p id="score-details">0 almost · 0 missed · 0 skipped</p>
+    </section>
+
+    <div id="notice" role="status" hidden></div>
+    <noscript><p class="notice">Enable JavaScript to play this game.</p></noscript>
+
+    <section id="exercise" class="card" aria-labelledby="verb" hidden>
+      <div class="card-top"><span id="instruction" class="eyebrow">COMPLETE THE SENTENCE</span><span id="position" class="counter"></span></div>
+      <progress id="progress" value="0" max="5" aria-label="Deck progress"></progress>
+      <h2 id="verb" lang="fr"></h2>
+      <p id="meaning" class="meaning"></p>
+      <p id="prompt" class="prompt" lang="fr"></p>
+      <p id="translation" class="translation"></p>
+      <div id="learn-answer" class="learning" hidden></div>
+      <form id="answer-form">
+        <label for="answer">Your French answer</label>
+        <input id="answer" name="answer" type="text" lang="fr" placeholder="Type the missing form…" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="done" maxlength="512" required aria-describedby="answer-help">
+        <p id="answer-help" class="small muted">The missing form or the full sentence. Accents matter.</p>
+        <div id="accents" class="accents" aria-label="Insert an accented letter">
+          <button type="button">é</button><button type="button">è</button><button type="button">ê</button><button type="button">à</button><button type="button">â</button><button type="button">î</button><button type="button">ô</button><button type="button">û</button><button type="button">ç</button>
+        </div>
+        <button id="submit" type="submit">Check answer <span aria-hidden="true">→</span></button>
+      </form>
+      <div class="secondary-controls"><button id="hint" type="button" class="secondary" aria-controls="hint-text" aria-expanded="false">Show hint</button><button id="skip" type="button" class="secondary">Skip exercise</button></div>
+      <p id="hint-text" class="hint" hidden></p>
+      <button id="learn-next" type="button" hidden>Next card <span aria-hidden="true">→</span></button>
+      <div id="feedback" class="feedback" role="status" aria-live="polite" aria-atomic="true" hidden>
+        <strong id="feedback-title"></strong><p id="feedback-answer" lang="fr"></p><p id="feedback-note" class="small"></p>
+      </div>
+      <div id="transition" class="transition" hidden><span id="next-label">Next exercise shortly…</span><button id="pause" class="secondary" type="button">Pause</button><button id="next" class="secondary" type="button">Next now</button></div>
+    </section>
+
+    <section id="finished" class="card finished" hidden>
+      <span class="eyebrow">DECK COMPLETE</span><h2 lang="fr">Bien joué.</h2>
+      <p id="finish-summary"></p><p class="muted">Every card in this practice has had its turn.</p>
+      <button id="again" type="button">Practice again <span aria-hidden="true">↻</span></button>
+      <button id="change" type="button" class="secondary">Choose another level or mode</button>
+    </section>
+
+    <footer><span>One sentence at a time.</span><button id="install" type="button" class="secondary" hidden>Install app</button><details><summary>Install on Android</summary><p>Open this site in Chrome, then use the browser menu → Add to Home screen → Install. Installation needs HTTPS. An internet connection is needed to check answers.</p></details></footer>
+  </main>
+</body>
+</html>

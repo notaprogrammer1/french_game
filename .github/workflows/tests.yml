@@ -13,6 +13,16 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install test dependencies
-        run: python -m pip install pytest
+        run: python -m pip install pytest playwright
+      - name: Install browser
+        run: python -m playwright install --with-deps chromium
       - name: Run tests
+        env:
+          FRENCH_GAME_BROWSER_TESTS: '1'
         run: python -m pytest -q
+      - name: Save phone screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phone-preview
+          path: artifacts/phone.png

@@ -1,11 +1,11 @@
 # French Phonics Game
 
-A small repo with two terminal games for learning French:
+A small repo with two games for learning French:
 
 1. **French Phonics Game** — learn how written French maps to spoken French.
-2. **French Conjugation Game** — drill verb forms in short contextual sentences.
+2. **French Conjugation Game** — drill verb forms in short contextual sentences, in the terminal or a phone browser.
 
-Both games are beginner-friendly, require no third-party packages, and run in the terminal.
+Both games are beginner-friendly and work without third-party runtime packages. The conjugation game also has a mobile web interface and basic installable PWA.
 
 ## Requirements
 
@@ -31,6 +31,85 @@ Run the standalone conjugation game after installing locally:
 ```bash
 french-conjugations
 ```
+
+Or run it without installing:
+
+```bash
+python3 -m french_phonics_game.conjugation_game
+```
+
+## Play on a phone
+
+From the repository directory, start the web interface:
+
+```bash
+python3 -m french_phonics_game.web
+```
+
+Open **http://localhost:8000** in a browser. There is no frontend build step or Node.js requirement. After installing the package, `french-conjugations-web` starts the same server.
+
+To play on an Android phone on the same Wi-Fi network:
+
+```bash
+python3 -m french_phonics_game.web --host 0.0.0.0 --port 8000
+```
+
+On the phone, open `http://<your-computer's-LAN-IP>:8000` in Chrome. Allow port 8000 through the computer's firewall if needed, and keep the server running. The phone only needs a browser; it never needs a terminal or Python.
+
+The interface starts at level 1 with **Drill new verb**. **Change practice** offers all 20 verb levels and all five existing modes. It shows one card at a time, with a large answer field, accent keys, a submit button, hints, skip, and a session score. Hints do not affect the score. Skips reveal the answer and count separately, without recording an attempt.
+
+Correct answers advance after about two seconds. Corrections and skipped answers stay visible for about six seconds before advancing. **Pause** keeps the feedback on screen; **Next now** moves immediately. Switching away from the app pauses a pending transition. A deck ends after every card has appeared, and **Practice again** starts another shuffled deck. Learn modes show answers in the existing order and advance when you tap **Next card**.
+
+### Install on Android
+
+Visit a deployed **HTTPS** URL in Chrome. Tap **Install app** when available, or use Chrome's menu → **Add to Home screen** → **Install**. It opens as a standalone app from the home screen.
+
+The PWA caches the interface and displays a reconnect message offline. Loading exercises, checking answers, and skipping still require a connection to the Python server. The local Wi-Fi HTTP URL is fine for playing, but Android PWA installation and service workers require HTTPS. Localhost is an exception on the computer itself.
+
+### Architecture
+
+- `conjugations.py` retains the original verb list and all exercise data.
+- `conjugation_core.py` contains the existing level/pool rules, example normalization, answer matching, notes, and `Score`, plus shared grading and deck helpers. It has no terminal or web input/output.
+- `conjugation_game.py` remains the CLI, using the shared core for learn order, drills, and grading. Its entry point and terminal commands remain available. The phonics CLI and its saved progress remain separate.
+- `web.py` is a small standard-library WSGI app. It serves static assets and three JSON routes: settings, a deck, and answer/skip feedback. It uses the same Python core to select cards, grade answers, and update scores.
+- `static/` contains plain HTML, CSS, and JavaScript, a manifest, icons, and a small service worker. JavaScript handles presentation and timing; it does not implement a second conjugation grader.
+
+The web app has no database, login, cookies, or server session store. Each open page holds its own temporary score and deck; the score is passed to Python with an answer and returned updated. Changing level/mode or replaying a deck keeps that score; reloading starts a new session. Web and CLI scores are independent, matching the original conjugation game's session-only design.
+
+### Easiest deployment: Render
+
+This needs a Python server, so GitHub Pages alone cannot host the complete game. The included `render.yaml` configures a small Render web service with Gunicorn and HTTPS:
+
+1. Push these changes to your GitHub repository.
+2. In Render, choose **New → Blueprint**, connect this repository, and choose the branch containing `render.yaml`.
+3. Review the service/plan and deploy. Open Render's HTTPS URL on your phone and install it from Chrome.
+
+You can also create a Render **Web Service** manually with:
+
+```text
+Build command: pip install '.[web]'
+Start command: gunicorn --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 30 french_phonics_game.web:application
+Health check: /api/settings
+```
+
+Only production hosting needs the optional Gunicorn dependency; local play remains dependency-free. Other Python hosts supporting WSGI and HTTPS can run the same application. Serve it at the domain root, since the PWA assets and API use root-relative URLs. The standard-library server is for local development.
+
+### Tests
+
+```bash
+python3 -m pip install '.[test]'
+python3 -m pytest -q
+```
+
+This runs the original phonics tests plus shared conjugation, CLI, web API, and PWA asset tests. Optional browser tests are skipped by default. To also check the phone layout, touch targets, all modes, feedback, automatic transitions, network failures, and the offline PWA shell:
+
+```bash
+python3 -m pip install playwright
+python3 -m playwright install chromium
+FRENCH_GAME_BROWSER_TESTS=1 python3 -m pytest -q
+```
+
+GitHub Actions runs both suites and saves a phone screenshot as the `phone-preview` artifact. The pre-existing mixed-learn test was updated to use menu option 4 and include conjugation cards, matching the current phonics menu; option 3 is conjugation learning.
 
 ## French Phonics Game
 

@@ -1,0 +1,77 @@
+:root { color-scheme: light; --ink: #203c32; --green: #174c3c; --paper: #f6f4ed; --muted: #657168; --line: #d8ded2; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font-family: system-ui, -apple-system, sans-serif; line-height: 1.5; }
+main { max-width: 600px; margin: auto; padding: 24px 18px max(28px, env(safe-area-inset-bottom)); }
+button, input, select { font: inherit; }
+button, select, summary { cursor: pointer; touch-action: manipulation; }
+button { min-height: 52px; padding: 12px 18px; border: 1px solid var(--green); border-radius: 12px; background: var(--green); color: white; font-weight: 650; }
+button:disabled { opacity: .55; cursor: default; }
+button:hover:not(:disabled) { filter: brightness(.93); }
+button:focus-visible, summary:focus-visible, input:focus, select:focus { outline: 3px solid #b57825; outline-offset: 3px; }
+button span { float: right; margin-left: 16px; }
+.secondary { color: var(--ink); background: transparent; border-color: var(--line); font-weight: 550; min-height: 48px; }
+[hidden] { display: none !important; }
+.masthead { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 24px; }
+.eyebrow { font-size: 10px; font-weight: 750; letter-spacing: .13em; color: var(--muted); }
+h1 { font-family: Georgia, serif; font-weight: 500; font-size: clamp(30px, 8vw, 42px); line-height: 1.1; margin: 8px 0 0; letter-spacing: -.035em; }
+.dot { color: #b57825; }
+.brand-mark { display: grid; place-items: center; flex-shrink: 0; width: 48px; height: 48px; background: var(--green); border-radius: 50%; color: #fff; font-family: Georgia, serif; font-size: 28px; font-style: italic; }
+.settings { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.settings summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 52px; font-size: 14px; }
+.settings summary::marker { content: ''; }
+.settings-link { color: var(--green); text-decoration: underline; text-underline-offset: 3px; font-size: 12px; }
+.settings form { padding: 0 0 16px; }
+label { display: block; font-size: 14px; font-weight: 650; margin-bottom: 8px; }
+label .muted { font-weight: 400; font-size: 12px; margin-left: 8px; }
+select, input { width: 100%; min-height: 56px; border: 1px solid #aab7ac; border-radius: 10px; color: var(--ink); background: #fff; padding: 12px; }
+select { margin-bottom: 16px; font-size: 16px; }
+.settings button { width: 100%; }
+.scoreboard { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 22px 0; }
+.scoreboard strong { display: block; font-size: 24px; letter-spacing: -.03em; }
+.scoreboard strong span { font-size: 13px; letter-spacing: 0; font-weight: 500; }
+.scoreboard p { font-size: 12px; max-width: 150px; color: var(--muted); text-align: right; }
+.card { padding: 24px; background: #fff; border: 1px solid var(--line); border-radius: 20px; box-shadow: 0 6px 24px #203c3207; }
+.card-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.counter { font-size: 12px; color: var(--muted); white-space: nowrap; }
+progress { display: block; appearance: none; width: 100%; height: 4px; margin: 12px 0 24px; border: none; border-radius: 4px; background: #e7ece4; }
+progress::-webkit-progress-bar { background: #e7ece4; border-radius: 4px; }
+progress::-webkit-progress-value { background: #55806a; border-radius: 4px; }
+progress::-moz-progress-bar { background: #55806a; border-radius: 4px; }
+h2 { margin: 0; font-family: Georgia, serif; font-size: 36px; font-weight: 500; letter-spacing: -.02em; overflow-wrap: anywhere; }
+.meaning { margin: 0 0 22px; color: var(--muted); font-size: 14px; }
+.prompt { font-family: Georgia, serif; font-size: 28px; line-height: 1.4; margin: 0 0 10px; overflow-wrap: anywhere; }
+.blank { display: inline-block; min-width: 65px; border-bottom: 2px solid #b57825; color: #b57825; text-align: center; }
+.translation { margin: 0 0 24px; font-size: 15px; color: var(--muted); }
+input { font-size: 22px; min-height: 60px; }
+input::placeholder { font-size: 17px; color: #77827a; }
+.small { font-size: 12px; }
+.muted { color: var(--muted); }
+#answer-help { margin: 8px 0 12px; }
+.accents { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+.accents button { min-width: 44px; min-height: 44px; padding: 4px 10px; border-color: var(--line); border-radius: 8px; background: #f6f8f4; color: var(--ink); font-size: 18px; font-weight: 500; }
+#submit, #learn-next { width: 100%; }
+.secondary-controls { display: flex; gap: 10px; margin-top: 12px; }
+.secondary-controls button { flex: 1; padding: 10px; font-size: 14px; }
+.hint { padding: 14px; background: #f3f5ee; border-radius: 10px; font-size: 14px; }
+.feedback { margin-top: 18px; border-radius: 12px; padding: 16px; border: 1px solid; overflow-wrap: anywhere; }
+.feedback p { margin: 6px 0 0; }
+.feedback.correct { background: #eef7ee; color: #21512e; border-color: #b4d4b9; }
+.feedback.almost { background: #fff6df; color: #755008; border-color: #e4cd8e; }
+.feedback.missed { background: #fff0ec; color: #893928; border-color: #e6c4b8; }
+.feedback.skipped { background: #f4f5f2; color: #4d5c50; border-color: var(--line); }
+.transition { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.transition span { flex: 1 0 100%; font-size: 12px; color: var(--muted); }
+.transition button { flex: 1; font-size: 13px; }
+.learning { padding: 16px; background: #f3f5ee; border-radius: 12px; margin-bottom: 18px; overflow-wrap: anywhere; }
+.learning p { margin: 8px 0 0; }
+.learning strong { font-size: 22px; }
+.finished h2 { margin-top: 14px; }
+.finished button { width: 100%; margin-top: 12px; }
+#notice, .notice { padding: 16px; border-radius: 12px; background: #fff6df; margin-bottom: 16px; font-size: 14px; }
+footer { color: var(--muted); text-align: center; font-size: 12px; margin-top: 24px; }
+footer details { margin-top: 12px; }
+footer summary { min-height: 44px; display: grid; place-items: center; text-decoration: underline; }
+footer p { max-width: 440px; margin: 0 auto 16px; }
+#install { display: block; margin: 16px auto 0; }
+@media (max-width: 380px) { main { padding-inline: 12px; } .card { padding: 18px; } .prompt { font-size: 26px; } .eyebrow { font-size: 9px; } }
+@media (min-width: 700px) { main { padding-top: 44px; } }

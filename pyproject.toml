@@ -9,3 +9,15 @@ dependencies = []
 [project.scripts]
 french-phonics = "french_phonics_game.app:main"
 french-conjugations = "french_phonics_game.conjugation_game:main"
+french-conjugations-web = "french_phonics_game.web:main"
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project.optional-dependencies]
+web = ["gunicorn>=23,<24"]
+test = ["pytest>=8,<9"]
+
+[tool.setuptools.package-data]
+french_phonics_game = ["static/*"]
